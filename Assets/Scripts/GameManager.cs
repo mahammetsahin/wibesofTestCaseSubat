@@ -136,8 +136,6 @@ public class GameManager : MonoBehaviour
         
         Debug.Log($"Grid Layer Mask: {gridLayerMask.value} (Layer names: {LayerMaskToString(gridLayerMask)})");
         
-        // Test the grid with a simple object after a short delay
-        StartCoroutine(TestGridAfterDelay(1.0f));
     }
     
     private void Update()
@@ -907,94 +905,12 @@ public class GameManager : MonoBehaviour
         cropSelectionUI.SetActive(false);
         Debug.Log($"Planted {cropType} in {cropField.name} and closed UI");
     }
-    
+
     #endregion
-    
+
     #region Debug
-    
-    private void OnDrawGizmos()
-    {
-        // Draw grid in editor for debugging
-        Gizmos.color = Color.white;
-        
-        // Draw grid lines
-        if (!Application.isPlaying)
-        {
-            // Draw grid cells
-            for (int x = 0; x < gridWidth; x++)
-            {
-                for (int z = 0; z < gridHeight; z++)
-                {
-                    // Draw cells from corner, not centered
-                    Vector3 pos = new Vector3(x * cellSize, 0, z * cellSize);
-                    Gizmos.DrawWireCube(pos + new Vector3(cellSize/2, 0, cellSize/2), new Vector3(cellSize, 0.1f, cellSize));
-                }
-            }
-            
-            // Draw grid outline
-            Vector3 gridCenter = new Vector3(gridWidth * cellSize / 2, 0, gridHeight * cellSize / 2);
-            Vector3 gridSize = new Vector3(gridWidth * cellSize, 0.2f, gridHeight * cellSize);
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireCube(gridCenter, gridSize);
-            
-            // Draw grid axes
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(Vector3.zero, new Vector3(gridWidth * cellSize, 0, 0));
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(Vector3.zero, new Vector3(0, 0, gridHeight * cellSize));
-        }
-        else if (gridCells != null)
-        {
-            // Draw all grid cells
-            for (int x = 0; x < gridWidth; x++)
-            {
-                for (int z = 0; z < gridHeight; z++)
-                {
-                    Vector2Int cellPos = new Vector2Int(x, z);
-                    // Get corner position
-                    Vector3 cornerPos = GridToWorldPosition(cellPos);
-                    // Calculate center for drawing the wire cube
-                    Vector3 centerPos = cornerPos + new Vector3(cellSize/2, 0, cellSize/2);
-                    
-                    // Check if cell is occupied
-                    if (gridCells.TryGetValue(cellPos, out GridCell cell) && !cell.IsEmpty)
-                    {
-                        // Draw wire frame in white
-                        Gizmos.color = Color.white;
-                        Gizmos.DrawWireCube(centerPos, new Vector3(cellSize, 0.1f, cellSize));
-                    }
-                    else
-                    {
-                        // Draw empty cells with light gray
-                        Gizmos.color = new Color(0.8f, 0.8f, 0.8f, 0.3f);
-                        Gizmos.DrawWireCube(centerPos, new Vector3(cellSize, 0.1f, cellSize));
-                    }
-                }
-            }
-            
-            // Draw selected object highlight if any
-            if (selectedObject != null)
-            {
-                Vector3 selectedPos = selectedObject.transform.position;
-                Vector2Int size = selectedObject.Size;
-                
-                // Draw highlight from corner (pivot position), with size based on object dimensions
-                Gizmos.color = Color.yellow;
-                // Calculate the center for the wire cube by adding half the size to the corner position
-                Vector3 highlightCenter = selectedPos + new Vector3(size.x * cellSize / 2, 0, size.y * cellSize / 2);
-                Gizmos.DrawWireCube(highlightCenter, new Vector3(cellSize * size.x, 0.3f, cellSize * size.y));
-                
-                // Draw drag state
-                string state = isDragging ? "Dragging" : (isHolding ? "Holding" : "Selected");
-                Handles.Label(selectedPos + Vector3.up * 1f, state);
-                
-                // Draw a small sphere at the pivot point (corner)
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(selectedPos, 0.1f);
-            }
-        }
-    }
-    
+
+
     // Helper method to convert layer mask to readable string
     private string LayerMaskToString(LayerMask mask)
     {
@@ -1063,68 +979,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    private void OnGUI()
-    {
-        // Display debug info in game view
-        GUILayout.BeginArea(new Rect(10, 10, 300, 300));
-        GUILayout.Label($"Grid: {gridWidth}x{gridHeight}, Cell Size: {cellSize}");
-        
-        if (selectedObject != null)
-        {
-            GUILayout.Label($"Selected: {selectedObject.name}");
-            GUILayout.Label($"Size: {selectedObject.Size.x}x{selectedObject.Size.y}");
-            GUILayout.Label($"Dragging: {isDragging}, Holding: {isHolding}");
-            GUILayout.Label($"Hold Timer: {holdTimer:F2}/{holdDuration:F2}");
-            
-            if (hasStartPosition)
-            {
-                GUILayout.Label($"Start Position: {startPosition}");
-            }
-        }
-        else
-        {
-            GUILayout.Label("No object selected");
-        }
-        
-        if (pendingPrefab != null)
-        {
-            GUILayout.Label($"Pending prefab: {pendingPrefab.name}");
-            GUILayout.Label($"Drag to instantiate (threshold: {dragThreshold}px)");
-            float dragDistance = Vector2.Distance(buttonPressPosition, Input.mousePosition);
-            GUILayout.Label($"Current drag distance: {dragDistance:F1}px");
-        }
-        
-        GUILayout.EndArea();
-    }
-    
-    private void TestPlaceBuilding()
-    {
-        // Find a Building prefab in the Resources folder
-        GameObject buildingPrefab = Resources.Load<GameObject>("Building");
-        
-        if (buildingPrefab == null)
-        {
-            Debug.LogError("Could not find Building prefab in Resources folder. Create a prefab with a PlaceableObject component.");
-            return;
-        }
-        
-        // Instantiate the building
-        GameObject obj = Instantiate(buildingPrefab);
-        selectedObject = obj.GetComponent<PlaceableObject>();
-        
-        if (selectedObject == null)
-        {
-            Debug.LogError("Building prefab does not have a PlaceableObject component!");
-            Destroy(obj);
-            return;
-        }
-        
-        // Start dragging the new object
-        isDragging = true;
-        hasStartPosition = false;
-        
-        Debug.Log("Test building created and ready for placement");
-    }
     
     // Keep this method to avoid errors in case it's referenced elsewhere
     private IEnumerator HoldTimerCoroutine(Vector3 initialPosition)
