@@ -147,6 +147,14 @@ The game uses a grid-based system for placing objects. Key features:
 - Objects can be moved by holding and dragging
 - Visual feedback shows valid/invalid placement
 
+
+![Game Screenshot 1](1.png)
+![Game Screenshot 2](2.PNG)
+![Game Screenshot 3](3.PNG)
+![Game Screenshot 4](4.PNG)
+![Game Screenshot 5](5.PNG)
+![Game Screenshot 6](6.PNG)
+
 ### Grid Sistemi Uygulaması
 
 Bu belge, çiftlik oyunu için ızgara sistemi uygulamasını açıklar.
@@ -295,3 +303,11 @@ Yerleştirilecek binaları seçmek için arayüz bileşeni. Özellikler:
 - Geçerli bir konuma yerleştirilemezse veya ızgara dışına sürüklenirse yeni nesneler otomatik olarak yok edilir
 - Mevcut nesneler, yeni bir konuma yerleştirilemezse orijinal konumlarına geri döner
 - Ekin alanları, dikim ve hasat için basit bir tıklama etkileşim modeli kullanır 
+
+
+![Oyun Ekran Görüntüsü 1](1.png)
+![Oyun Ekran Görüntüsü 2](2.PNG)
+![Oyun Ekran Görüntüsü 3](3.PNG)
+![Oyun Ekran Görüntüsü 4](4.PNG)
+![Oyun Ekran Görüntüsü 5](5.PNG)
+![Oyun Ekran Görüntüsü 6](6.PNG)
